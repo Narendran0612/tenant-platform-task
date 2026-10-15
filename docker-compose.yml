@@ -1,0 +1,37 @@
+services:
+  tenant-app:
+    build: ./tenant-app
+    image: tenant-app:local
+    container_name: tenant-demo
+    ports:
+      - "8080:5000"
+    environment:
+      TENANT_NAME: acme
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: tenant-backend
+    ports:
+      - "5000:5000"
+    environment:
+      DB_PATH: /app/data/tenants.db
+      JENKINS_URL: http://jenkins:8081
+      JENKINS_JOB: tenant-deployment
+    volumes:
+      - backend-data:/app/data
+    restart: unless-stopped
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: jenkins
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+    restart: unless-stopped
+
+volumes:
+  backend-data:
+  jenkins-data:

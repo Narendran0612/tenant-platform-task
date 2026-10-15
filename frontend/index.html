@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            width: min(360px, 85%);
+            box-shadow: 0 4px 18px #0001;
+        }
+        input, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #status { overflow-wrap: anywhere; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h2>Tenant Platform</h2>
+        <p>Register your own application instance.</p>
+
+        <form id="signup">
+            <label for="tenant">Tenant name</label>
+            <input
+                id="tenant"
+                name="tenant"
+                placeholder="e.g. acme"
+                pattern="[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?"
+                maxlength="40"
+                required
+            >
+            <button type="submit">Register Tenant</button>
+        </form>
+
+        <p id="status" role="status"></p>
+    </main>
+
+    <script>
+        document.getElementById("signup").addEventListener(
+            "submit", async (event) => {
+                event.preventDefault();
+
+                const tenant = document.getElementById("tenant")
+                    .value.trim();
+                const status = document.getElementById("status");
+
+                status.textContent = "Registering tenant...";
+
+                try {
+                    const response = await fetch(
+                        "http://localhost:5000/api/tenants",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                tenant_name: tenant
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+                    status.textContent = response.ok
+                        ? `Tenant ${result.tenant}: ${result.status}`
+                        : `Error: ${result.error || result.status}`;
+                } catch (error) {
+                    status.textContent =
+                        "Backend is not running yet. Continue with setup.";
+                }
+            }
+        );
+    </script>
+</body>
+</html>
